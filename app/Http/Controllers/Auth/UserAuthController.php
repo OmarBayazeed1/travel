@@ -40,14 +40,14 @@ class UserAuthController extends Controller
         $success['token']=$user->createToken('user',['app:all'])->plainTextToken;
         $success['name']=$user->name;
         $success['role']=$user->role;
-
+        $success['user_id']=$user->id;
 
 
         return response()->json([
             'status'=>true,
             'msg'=>'Registered successfully',
             'data'=>$success
-        ],200);
+        ],201);
 
     }
 

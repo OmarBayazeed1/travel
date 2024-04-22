@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Auth;
 use App\Http\Controllers\Controller;
 use App\Models\ServiceOwner;
 use App\Models\User;
+use App\Models\Wallet;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
@@ -50,6 +51,7 @@ class AuthBothController extends Controller
                 $token = $user->createToken('auth_token')->plainTextToken;
                 $success['token'] = $token;
                 $success['role'] = '2';
+                $success['user_id']=$user->id;
 
                 return response()->json([
                     'status' => true,
@@ -98,10 +100,21 @@ class AuthBothController extends Controller
         $user=auth()->user();
         // Convert role to a string
         $user->role = strval($user->role);
+        $wallet=Wallet::find($user->id);
+
+        //response array
+        $success['user_name']=$user->name;
+        $success['user_id']=$user->id;
+        $success['email']=$user->email;
+        $success['role']=$user->role;
+        if($user->role==2){
+            $success['wallet_amount']=$wallet->amount;
+        }
+
         return response()->json([
             'status' => true,
             'msg' => 'profile retrieved successfully.',
-            'data'=>$user
+            'data'=>$success
         ]);
 
     }

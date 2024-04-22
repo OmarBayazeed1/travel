@@ -38,8 +38,7 @@ Route::middleware(['auth:user,serviceOwner'])->group(function () {
     Route::get('/logoutBoth', [AuthBothController::class, 'logoutBoth']);
     Route::get('/profileBoth', [AuthBothController::class, 'profileBoth']);
 
-    //Wallet
-        Route::get('/wallets/{id}', [WalletController::class, 'show']);
+
 
     //Flight
          // CRUD
@@ -61,8 +60,9 @@ Route::middleware(['auth:user', 'type.user'])->group(function () {
     Route::post('/flights/searchByPrice',[FlightController::class,'searchByPrice']);
     //CRUD ON BOOK A FLIGHT
     //book a flight
-    Route::post('/flights/booking',[BookingFlightController::class,'create']);
-    Route::post('/flights/booking/{id}',[BookingFlightController::class,'update']);
+   // Route::post('/flights/booking',[BookingFlightController::class,'create']);
+   // Route::post('/flights/booking/{id}',[BookingFlightController::class,'update']);
+   // Route::get('/flights/booking',[BookingFlightController::class,]);
 
 });
 
@@ -81,6 +81,9 @@ Route::middleware(['auth:serviceOwner', 'type.serviceOwner'])->group(function ()
    //Wallet
         Route::get('/wallets', [WalletController::class, 'index']);
         Route::post('/service_owners/wallet',[WalletController::class,'create']);
+        Route::get('/wallets/{id}', [WalletController::class, 'show']);
+        Route::post('/service_owners/wallet/update/{id}',[WalletController::class,'update']);
+
     //Flight
         //CRUD
         Route::post('/service_owners/flight', [FlightController::class, 'create']);
