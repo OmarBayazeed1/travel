@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Booking_flight;
 use App\Models\Flight;
 use App\Models\User;
+use App\Models\Wallet;
 use http\Env\Response;
 use Illuminate\Http\Request;
 
@@ -51,6 +52,27 @@ class BookingFlightController extends Controller
             ],400);
         }
 
+
+
+        // Deduct price from user's wallet
+        $price = $flight->price;
+        $wallet = Wallet::where('user_id', $userId)->first();
+        if (!$wallet) {
+            return response()->json([
+                'status' => false,
+                'msg' => 'User wallet not found!'
+            ], 404);
+        }
+
+        $currentBalance = $wallet->amount;
+        if ($currentBalance < $price) {
+            return response()->json([
+                'status' => false,
+                'msg' => 'Insufficient funds in the wallet. Please charge it first.'
+            ], 400);
+        }
+
+
         $book=Booking_flight::create($rules);
 
         //response array
@@ -66,6 +88,7 @@ class BookingFlightController extends Controller
         $success['boarding_time']=$flight->boarding_time;
         $success['arrival_time']=$flight->arrival_time;
         $success['distanceInKilo']=$flight->distanceInKilo;
+        $success['price']=$flight->price;
 
 
         return response()->json([
@@ -92,12 +115,35 @@ class BookingFlightController extends Controller
             'flightClass' => 'required|in:first,business,economy',
         ]);
 
-        $booking->update($rules);
+
 
         // Retrieve the associated flight and user
         $flight = $booking->flight()->first();
         $user = $booking->user()->first();
 
+        // Check if the booking status is being updated to "cancelled"
+        if ($booking->status !== 'cancelled' && $rules['status'] === 'cancelled') {
+            // Update the booking status
+            $booking->update($rules);
+
+            // Refund the price to the user's wallet
+            $price = $flight->price;
+            $wallet = Wallet::where('user_id', $user->id)->first();
+            if (!$wallet) {
+                return response()->json([
+                    'status' => false,
+                    'msg' => 'User wallet not found!'
+                ], 404);
+            }
+
+            // Add the price back to the wallet balance
+            $currentBalance = $wallet->amount;
+            $wallet->amount = $currentBalance + $price;
+            $wallet->save();
+        } else {
+            // Update the booking status without refunding
+            $booking->update($rules);
+        }
         // Response array
         $success['status'] = $booking->status;
         $success['flightClass'] = $booking->flightClass;
@@ -109,6 +155,8 @@ class BookingFlightController extends Controller
         $success['boarding_time'] = $flight->boarding_time;
         $success['arrival_time'] = $flight->arrival_time;
         $success['distanceInKilo'] = $flight->distanceInKilo;
+        $success['price'] = $flight->price;
+
 
         return response()->json([
             'status' => true,

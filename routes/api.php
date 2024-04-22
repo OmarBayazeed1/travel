@@ -6,6 +6,7 @@ use App\Http\Controllers\Auth\UserAuthController;
 use App\Http\Controllers\Flight\BookingFlightController;
 use App\Http\Controllers\Flight\FlightController;
 use App\Http\Controllers\Flight\TicketController;
+use App\Http\Controllers\WalletController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,9 @@ Route::middleware(['auth:user,serviceOwner'])->group(function () {
     //Auth
     Route::get('/logoutBoth', [AuthBothController::class, 'logoutBoth']);
     Route::get('/profileBoth', [AuthBothController::class, 'profileBoth']);
+
+    //Wallet
+        Route::get('/wallets/{id}', [WalletController::class, 'show']);
 
     //Flight
          // CRUD
@@ -74,7 +78,9 @@ Route::middleware(['auth:serviceOwner', 'type.serviceOwner'])->group(function ()
    Route::get('/service_owners/profile',[ServiceOwnerAuthController::class,'profile']);
    Route::get('/service_owners/logout',[ServiceOwnerAuthController::class,'logout']);
 
-
+   //Wallet
+        Route::get('/wallets', [WalletController::class, 'index']);
+        Route::post('/service_owners/wallet',[WalletController::class,'create']);
     //Flight
         //CRUD
         Route::post('/service_owners/flight', [FlightController::class, 'create']);
